@@ -8,7 +8,9 @@ Best practices, guidance, examples, diagrams, and all the good knowledge one nee
 
 ### Confluent Operator on VMware Tanzu Kubernetes Grid Integrated Edition Reference Architecture
 
-![alt text](ref-arch-diagram/Confluent-Operator-TKGI-Reference-Architecture-Image.jpg "Confluent Operator on VMware Tanzu Kubernetes Grid Integrated Edition Reference Architecture")
+![alt text](ref-arch-diagram/Confluent-Operator-TKGI-Reference-Architecture-Image.jpg "Confluent Operator on VMware Tanzu Kubernetes Grid Integrated Edition Reference Architecture")  
+
+[Higher Resolution PDF Version](/ref-arch-diagram/Confluent-Operator-TKGI-Reference-Architecture-Diagram.pdf)
 
 ### Environment Assets
 
