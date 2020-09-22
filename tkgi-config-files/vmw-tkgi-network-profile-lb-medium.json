@@ -1,0 +1,7 @@
+{
+    "name": "cotkgi-lb-med",
+    "description": "Network profile for medium NSX-T load balancer",
+    "parameters": {
+        "lb_size": "medium"
+    }
+}
