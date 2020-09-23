@@ -28,7 +28,7 @@ The intent of these recommendations is to provide a minimum environment in which
 
 [Confluent Platform System Requirements](https://docs.confluent.io/current/installation/system-requirements.html)
 
-We recommend a minimum of 12 worker nodes with 2 CPUs and 8 GB of RAM per node. This will provide a balanced number of nodes across the minimum recommended 3 availability zones. Building these recommendations was performed on a single server with TKGI /w NSX-T Pre-Installed - vSphere (7.0 GA), TKGI (1.8), NSX-T (3.0), Harbor (1.10.1) A plan was created in TKGI to match this configuration and the plan was named `confluent-operator`. Worker nodes were of the `large.disk` node type.
+We recommend a minimum of 12 worker nodes with 2 CPUs and 8 GB of RAM per node. This will provide a balanced number of nodes across the minimum recommended 3 availability zones. Building these recommendations was performed on a single server with TKGI & NSX-T Pre-Installed - vSphere (7.0 GA), TKGI (1.8), NSX-T (3.0), Harbor (1.10.1) A plan was created in TKGI to match this configuration and the plan was named `confluent-operator`. Worker nodes were of the `large.disk` node type.
 
 ### General Node & Pod Sizing Guidance
 
