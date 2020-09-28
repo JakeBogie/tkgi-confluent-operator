@@ -44,12 +44,12 @@ We recommend a minimum of 12 worker nodes with 2 CPUs and 8 GB of RAM per node. 
 
 ### High Availability Considerations
 
-- **TODO** #6 Anti-Affinity best practices and examples for paired or clustered pods (Kafka / Zookeeper / SchemaRegistry / Connect)
-- **TODO** #7 Availability zone layout and best practices with examples
+- **TODO** #5 Anti-Affinity best practices and examples for paired or clustered pods (Kafka / Zookeeper / SchemaRegistry / Connect)
+- **TODO** #6 Availability zone layout and best practices with examples
 
 ### Security Considerations
 
-- **TODO** #8 Securing Confluent Operator on TKGI best practices & examples. (Securing Authentication, Certificates, SASL, TLS/mTLS)
+- **TODO** #7 Securing Confluent Operator on TKGI best practices & examples. (Securing Authentication, Certificates, SASL, TLS/mTLS)
 
 ### Network Considerations
 
