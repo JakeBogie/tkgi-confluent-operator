@@ -9,7 +9,7 @@ Best practices, guidance, examples, diagrams, and all the good knowledge one nee
 ### Confluent Operator on VMware Tanzu Kubernetes Grid Integrated Edition Reference Architecture
 
 <img src="ref/../ref-arch-diagram/Confluent-Operator-TKGI-Reference-Architecture-Diagram.png" alt="RefArch Diagram"
-	title="Reference Architecture Diagram" width="640" height="361" />
+	title="Reference Architecture Diagram" width="798" height="450" />
 
 [Higher Resolution PDF Version](/ref-arch-diagram/Confluent-Operator-TKGI-Reference-Architecture-Diagram.pdf)
 
