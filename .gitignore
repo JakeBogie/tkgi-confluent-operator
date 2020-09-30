@@ -1,6 +1,8 @@
 **/.DS_Store
 **/.envrc
 **/.history
+archive
 confluent-operator-5.5.1
+confluent-operator-6.0.0
 keys
 scratch
