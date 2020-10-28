@@ -4,12 +4,16 @@
 
 Best practices, guidance, examples, diagrams, and all the good knowledge one needs to have success with the Confluent Operator on VMware TKGI.
 
+## Prior Releases and Versions
+
+Check the [Releases Page](https://github.com/jbogie-vmware/tkgi-confluent-operator/releases/) for previous versions and tested configurations.
+
 ## Reference Architecture and Planning Topics
 
 ### Confluent Operator on VMware Tanzu Kubernetes Grid Integrated Edition Reference Architecture
 
 <img src="ref/../ref-arch-diagram/Confluent-Operator-TKGI-Reference-Architecture-Diagram.png" alt="RefArch Diagram"
-	title="Reference Architecture Diagram" width="798" height="450" />
+title="Reference Architecture Diagram" width="798" height="450" />
 
 [Higher Resolution PDF Version](/ref-arch-diagram/Confluent-Operator-TKGI-Reference-Architecture-Diagram.pdf)
 
@@ -19,7 +23,7 @@ Best practices, guidance, examples, diagrams, and all the good knowledge one nee
 - VMware Tanzu Kubernetes Grid Integrated Edition v1.8
 - VMware NSX-T v3.0
 - VMware Harbor 1.10.1
-- Confluent Operator v5.5.1
+- Confluent Operator v6.0.0
 
 ### Cluster Sizing
 
