@@ -20,10 +20,10 @@ title="Reference Architecture Diagram" width="798" height="450" />
 ### Environment Assets
 
 - VMware vSphere v7.0
-- VMware Tanzu Kubernetes Grid Integrated Edition v1.8
-- VMware NSX-T v3.0
-- VMware Harbor 1.10.1
-- Confluent Operator v6.0.0
+- VMware Tanzu Kubernetes Grid Integrated Edition v1.9.1
+- VMware NSX-T v3.0.2
+- VMware Harbor 2.0.4
+- Confluent Operator v1.6.1
 
 ### Cluster Sizing
 
@@ -44,8 +44,6 @@ We recommend a minimum of 12 worker nodes with 2 CPUs and 8 GB of RAM per node. 
 
 - **TODO** #3 vSphere-volume provider explanation (thin/thick/eager)
 - **TODO** #4 vSAN considerations (describe cache tier and data protection/performance options)
-
-[//]: # (vX - Portworx integration and their view of how they make the RA better.)
 
 ### High Availability Considerations
 
