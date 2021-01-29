@@ -6,9 +6,9 @@ Clone this [repository](https://github.com/jbogie-vmware/tkgi-confluent-operator
 
 Download and extract the [Confluent Operator bundle](https://platform-ops-bin.s3-us-west-1.amazonaws.com/operator/confluent-operator-1.6.1.tar.gz) into the cloned repository directory.  
 
-All commands from here on are being performed in the repository directory which will be referred to as `$WORKDIR`. 
+All commands from here on are being performed in the repository directory which will be referred to as `$WORKDIR`.
 
-The directory structure should look like this:    
+The directory structure should look like this:
 
 ```txt
 tkgi-confluent-operator ($WORKDIR)
@@ -104,9 +104,45 @@ Any customizations that have been pre-configured outside of what Confluent recom
 
 ## Deploy Confluent Operator Bundle
 
+### Labeling Nodes
+
+Looking at node labels of the 12 nodes that were created you will see that the nodes are labeled with a `bosh.zone` label that has three possible values `pks-az1`, `pks-az2`, and `pks-az3`. The cluster that was created for developing these instructions created the following nodes with these labels:  
+
+| **IP Address** | **Label: bosh.zone** |
+| :---: | :---: |
+| 172.28.0.5 | pks-az1 |
+| 172.28.0.6 | pks-az1 |
+| 172.28.0.7 | pks-az1 |
+| 172.18.0.8 | pks-az1 |
+| 172.28.0.9 | pks-az2 |
+| 172.28.0.10 | pks-az2 |
+| 172.28.0.11 | pks-az2 |
+| 172.18.0.12 | pks-az2 |
+| 172.28.0.13 | pks-az3 |
+| 172.28.0.14 | pks-az3 |
+| 172.18.0.15 | pks-az3 |
+| 172.18.0.16 | pks-az3 |
+
+We need to add labels to sets of nodes to provide workload spread across availability zones along with separating workloads from one another based upon best practices. To do this we need to add some more labels to the nodes. Using the table below add the new label `components` to the nodes with the corresponding values:
+
+| **IP Address** | **Label: bosh.zone** | **Label: components**
+| :---: | :---: | :---: |
+| 172.28.0.5 | pks-az1 | zookeeper |
+| 172.28.0.6 | pks-az1 | kafka |
+| 172.28.0.7 | pks-az1 | core-services |
+| 172.18.0.8 | pks-az1 | ops-services |
+| 172.28.0.9 | pks-az2 | zookeeper |
+| 172.28.0.10 | pks-az2 | kafka |
+| 172.28.0.11 | pks-az2 | core-services |
+| 172.18.0.12 | pks-az2 | ops-services |
+| 172.28.0.13 | pks-az3 | zookeeper |
+| 172.28.0.14 | pks-az3 | kafka |
+| 172.18.0.15 | pks-az3 | core-services |
+| 172.18.0.16 | pks-az3 | ops-services |
+
 ### Operator Pod
 
-1. Deploy the Confluent Operator Pod:
+Deploy the Confluent Operator Pod:
 
    ```zsh
    helm install operator confluent-operator-1.6.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set operator.enabled=true
@@ -114,7 +150,7 @@ Any customizations that have been pre-configured outside of what Confluent recom
 
 ### Zookeeper StatefulSet
 
-2. Deploy the Zookeeper ensemble:
+Deploy the Zookeeper ensemble:
 
    ```zsh
    helm install zookeeper confluent-operator-1.6.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set zookeeper.enabled=true
@@ -122,13 +158,13 @@ Any customizations that have been pre-configured outside of what Confluent recom
 
 ### Kafka StatefulSet
 
-3. Deploy the Kafka Broker Cluster:
+1. Deploy the Kafka Broker Cluster:
 
    ```zsh
    helm install kafka confluent-operator-1.6.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set kafka.enabled=true
    ```
 
-4. Create DNS `A` records for each Kafka Broker pod's corresponding external load balancer service IP address along with the kafka bootstrap load balancer. To get the load balancer external IP addresses do the following:
+2. Create DNS `A` records for each Kafka Broker pod's corresponding external load balancer service IP address along with the kafka bootstrap load balancer. To get the load balancer external IP addresses do the following:
 
     ```zsh
     kubectl get service -n confluent-operator | grep LoadBalancer
@@ -145,31 +181,45 @@ Any customizations that have been pre-configured outside of what Confluent recom
 
 ### Schema Registry StatefulSet
 
-5. Deploy the the Schema Registry Cluster:
+Deploy the the Schema Registry Cluster:
 
-    ```zsh
-    helm install schemaregistry confluent-operator-1.6.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set schemaregistry.enabled=true
-    ```
+ ```zsh
+ helm install schemaregistry confluent-operator-1.6.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set schemaregistry.enabled=true
+ ```
 
-6. Deploy the Confluent Connect Cluster:
+### Connectors StatefulSet
 
-    ```zsh
-    helm install connectors confluent-operator-1.6.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set connect.enabled=true
-    ```
+Deploy the Confluent Connect Cluster:
 
-7. Deploy the Confluent Replicator:
+ ```zsh
+ helm install connectors confluent-operator-1.6.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set connect.enabled=true
+ ```
 
-    ```zsh
-    helm install replicator confluent-operator-1.6.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set replicator.enabled=true
-    ```
+### Replicator StatefulSet
 
-8. Deploy the Confluent Control Center:
+Deploy the Confluent Replicator:
+
+ ```zsh
+ helm install replicator confluent-operator-1.6.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set replicator.enabled=true
+ ```
+
+### kSQL StatefulSet
+
+Deploy ksqlDB:
+
+ ```zsh
+ helm install ksql ./confluent-operator-1.6.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set ksql.enabled=true
+ ```
+
+### Control Center
+
+1. Deploy the Confluent Control Center:
 
     ```zsh
     helm install controlcenter confluent-operator-1.6.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set controlcenter.enabled=true
     ```
 
-9. Create DNS `A` records for the Confluent Control Center load balancer. To get the load balancer address do the following:
+2. Create DNS `A` records for the Confluent Control Center load balancer. To get the load balancer address do the following:
 
     ```zsh
     kubectl get service -n confluent-operator | grep LoadBalancer
@@ -181,10 +231,4 @@ Any customizations that have been pre-configured outside of what Confluent recom
     c3.cotkgi.foo.bar
     ```
 
-    Test connectivity to the Confluent Control Center with your browser using the credentials in the
-
-10. Deploy ksqlDB:
-
-    ```zsh
-    helm install ksql ./confluent-operator-1.6.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set ksql.enabled=true
-    ```
+3. Test connectivity to the Confluent Control Center with your browser using the credentials set in `$PFILE`.
