@@ -4,16 +4,16 @@
 
 Clone this [repository](https://github.com/jbogie-vmware/tkgi-confluent-operator).  
 
-Download and extract the [Confluent Operator bundle](https://platform-ops-bin.s3-us-west-1.amazonaws.com/operator/confluent-operator-5.5.1.tar.gz) into the cloned repository directory.  
+Download and extract the [Confluent Operator bundle](https://platform-ops-bin.s3-us-west-1.amazonaws.com/operator/confluent-operator-1.6.1.tar.gz) into the cloned repository directory.  
 
-All commands from here on are being performed in the repository directory which will be referred to as `$WORKDIR`. 
+All commands from here on are being performed in the repository directory which will be referred to as `$WORKDIR`.
 
-The directory structure should look like this:    
+The directory structure should look like this:
 
 ```txt
 tkgi-confluent-operator ($WORKDIR)
 ├── README.md
-├── confluent-operator-5.5.1
+├── confluent-operator-1.6.1
 │   ├── COPYRIGHT
 │   ├── IMAGES
 │   ├── grafana-dashboard
@@ -142,29 +142,29 @@ We need to add labels to sets of nodes to provide workload spread across availab
 
 ### Operator Pod
 
-1. Deploy the Confluent Operator Pod:
+Deploy the Confluent Operator Pod:
 
    ```zsh
-   helm install operator confluent-operator-5.5.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set operator.enabled=true
+   helm install operator confluent-operator-1.6.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set operator.enabled=true
    ```
 
 ### Zookeeper StatefulSet
 
-2. Deploy the Zookeeper ensemble:
+Deploy the Zookeeper ensemble:
 
    ```zsh
-   helm install zookeeper confluent-operator-5.5.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set zookeeper.enabled=true
+   helm install zookeeper confluent-operator-1.6.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set zookeeper.enabled=true
    ```
 
 ### Kafka StatefulSet
 
-3. Deploy the Kafka Broker Cluster:
+1. Deploy the Kafka Broker Cluster:
 
    ```zsh
-   helm install kafka confluent-operator-5.5.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set kafka.enabled=true
+   helm install kafka confluent-operator-1.6.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set kafka.enabled=true
    ```
 
-4. Create DNS `A` records for each Kafka Broker Pod's corresponding load balancer. To get the load balancer address do the following:
+2. Create DNS `A` records for each Kafka Broker pod's corresponding external load balancer service IP address along with the kafka bootstrap load balancer. To get the load balancer external IP addresses do the following:
 
     ```zsh
     kubectl get service -n confluent-operator | grep LoadBalancer
@@ -173,38 +173,53 @@ We need to add labels to sets of nodes to provide workload spread across availab
     In the example environment the DNS zone was `foo.bar` so the `A` records created were the following:
 
     ```zsh
-    kb0.cotkgi.foo.bar
-    kb1.cotkgi.foo.bar
-    kb2.cotkgi.foo.bar
+    kafka.cotkgi.foo.bar
+    kb0.kafka.cotkgi.foo.bar
+    kb1.kafka.cotkgi.foo.bar
+    kb2.kafka.cotkgi.foo.bar
     ```
 
 ### Schema Registry StatefulSet
 
-5. Deploy the the Schema Registry Cluster:
+Deploy the the Schema Registry Cluster:
+
+ ```zsh
+ helm install schemaregistry confluent-operator-1.6.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set schemaregistry.enabled=true
+ ```
+
+### Connectors StatefulSet
+
+Deploy the Confluent Connect Cluster:
+
+ ```zsh
+ helm install connectors confluent-operator-1.6.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set connect.enabled=true
+ ```
+
+### Replicator StatefulSet
+
+Deploy the Confluent Replicator:
+
+ ```zsh
+ helm install replicator confluent-operator-1.6.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set replicator.enabled=true
+ ```
+
+### kSQL StatefulSet
+
+Deploy ksqlDB:
+
+ ```zsh
+ helm install ksql ./confluent-operator-1.6.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set ksql.enabled=true
+ ```
+
+### Control Center
+
+1. Deploy the Confluent Control Center:
 
     ```zsh
-    helm install schemaregistry confluent-operator-5.5.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set schemaregistry.enabled=true
+    helm install controlcenter confluent-operator-1.6.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set controlcenter.enabled=true
     ```
 
-6. Deploy the Confluent Connect Cluster:
-
-    ```zsh
-    helm install connectors confluent-operator-5.5.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set connect.enabled=true
-    ```
-
-7. Deploy the Confluent Replicator:
-
-    ```zsh
-    helm install replicator confluent-operator-5.5.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set replicator.enabled=true
-    ```
-
-8. Deploy the Confluent Control Center:
-
-    ```zsh
-    helm install controlcenter confluent-operator-5.5.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set controlcenter.enabled=true
-    ```
-
-9. Create DNS `A` records for the Confluent Control Center load balancer. To get the load balancer address do the following:
+2. Create DNS `A` records for the Confluent Control Center load balancer. To get the load balancer address do the following:
 
     ```zsh
     kubectl get service -n confluent-operator | grep LoadBalancer
@@ -216,10 +231,4 @@ We need to add labels to sets of nodes to provide workload spread across availab
     c3.cotkgi.foo.bar
     ```
 
-    Test connectivity to the Confluent Control Center with your browser using the credentials in the
-
-10. Deploy ksqlDB:
-
-    ```zsh
-    helm install ksql ./confluent-operator-5.5.1/helm/confluent-operator -f $PFILE --namespace confluent-operator --set ksql.enabled=true
-    ```
+3. Test connectivity to the Confluent Control Center with your browser using the credentials set in `$PFILE`.

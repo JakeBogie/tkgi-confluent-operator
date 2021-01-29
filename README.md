@@ -4,22 +4,26 @@
 
 Best practices, guidance, examples, diagrams, and all the good knowledge one needs to have success with the Confluent Operator on VMware TKGI.
 
+## Prior Releases and Versions
+
+Check the [Releases Page](https://github.com/jbogie-vmware/tkgi-confluent-operator/releases/) for previous versions and tested configurations.
+
 ## Reference Architecture and Planning Topics
 
 ### Confluent Operator on VMware Tanzu Kubernetes Grid Integrated Edition Reference Architecture
 
 <img src="ref/../ref-arch-diagram/Confluent-Operator-TKGI-Reference-Architecture-Diagram.png" alt="RefArch Diagram"
-	title="Reference Architecture Diagram" width="798" height="450" />
+title="Reference Architecture Diagram" width="798" height="450" />
 
 [Higher Resolution PDF Version](/ref-arch-diagram/Confluent-Operator-TKGI-Reference-Architecture-Diagram.pdf)
 
 ### Environment Assets
 
 - VMware vSphere v7.0
-- VMware Tanzu Kubernetes Grid Integrated Edition v1.8
-- VMware NSX-T v3.0
-- VMware Harbor 1.10.1
-- Confluent Operator v5.5.1
+- VMware Tanzu Kubernetes Grid Integrated Edition v1.9.1
+- VMware NSX-T v3.0.2
+- VMware Harbor 2.0.4
+- Confluent Operator v1.6.1
 
 ### Cluster Sizing
 
@@ -40,8 +44,6 @@ We recommend a minimum of 12 worker nodes with 2 CPUs and 8 GB of RAM per node. 
 
 - **TODO** #3 vSphere-volume provider explanation (thin/thick/eager)
 - **TODO** #4 vSAN considerations (describe cache tier and data protection/performance options)
-
-[//]: # (vX - Portworx integration and their view of how they make the RA better.)
 
 ### High Availability Considerations
 

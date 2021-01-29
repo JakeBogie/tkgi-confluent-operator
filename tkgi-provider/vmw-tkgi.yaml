@@ -5,16 +5,9 @@ global:
     name: private
     ## if any name which indicates regions
     ##
-    region: ((REMOVED-REGION)) ##[//]:v1 - Updated to match host region
-    kubernetes:
-       deployment:
-         ## If kubernetes is deployed in multi zone mode then specify availability-zones as appropriate
-         ## If kubernetes is deployed in single availability zone then specify appropriate values
-         ## For the private cloud, use kubernetes node labels as appropriate
-         zones: ##[//]:v1 - Updated to match the TKGI AZs that are available
-          - pks-az1
-          - pks-az2
-          - pks-az3
+    ##[//]:v2 - Region was updated to reflect DNS zone of resources being used.
+    region: ((REMOVED-REGION))
+    ##[//]:v2 - END
     ##
     ## Docker registry endpoint where Confluent Images are available.
     ##
@@ -23,9 +16,11 @@ global:
       credential:
         required: false
   sasl:
+    ##[//]:v2 - Changed to credentials that are more secure.
     plain:
-      username: cotkgi
-      password: cotkgi-operator-example
+      username: ((REMOVED-USERNAME))
+      password: ((REMOVED-PASSWORD))
+    ##[//]:v2 - END
   authorization:
     rbac:
       enabled: false
@@ -56,70 +51,129 @@ operator:
 zookeeper:
   name: zookeeper
   replicas: 3
-  disableHostPort: true ##[//]:v1 - Need to set this to `true` to honor rack:topology mapping below
-##[//]:v1 - Added to increase zookeeper resources (Use 1 CPU and 6GB of RAM)
+##[//]:v2 - Updated resource values to allow full CPU access, 6Gi of RAM, and a 6G JVM heap.
   resources:
     requests:
       cpu: "1"
       memory: 6Gi
   jvmConfig:
     heapSize: 6G
-##[//]:v1 - Added to create nodeAffinity to nodes labeled 'zookeeper'
-  nodeAffinity:
-    key: components
-    values:
-    - zookeeper
-##[//]:v1 - Added rack:topology mapping to assign one pod per AZ in TKGI  
-  rack:
-    topology: bosh.zone
+##[//]:v2 - END
+##[//]:v2 - podAnnotations added to make the affinity rules work
+  podAnnotations:
+    workload: zookeeper
+##[//]:v2 - END
+##[//]:v2 - Added affinity and anti-affinity rules to ensure pod distribution
+  affinity:
+    nodeAffinity:
+      key: components
+      values:
+      - zookeeper
+      rule: PREFERRED
+    podAffinity:
+      rule: PREFERRED
+      terms:
+      - key: workload
+        values:
+        - zookeeper
+        namespaces:
+        - confluent-operator
+        topologyKey:
+          key: bosh.zone
+        weight:
+          weight: 100
+    podAntiAffinity:
+      rule: PREFERRED
+      terms:
+      - key: workload
+        values:
+        - zookeeper
+        namespaces:
+        - confluent-operator
+        topologyKey:
+          key: bosh.zone
+        weight:
+          weight: 100
+##[//]:v2 - END
 
 ## Kafka Cluster
 ##
 kafka:
   name: kafka
   replicas: 3
-  disableHostPort: true ##[//]:v1 - Need to set this to `true` to honor rack:topology mapping below
-##[//]:v1 - Added to increase zookeeper resources (Use 1 CPU and 6GB of RAM)
+  ##[//]:v2 - Updated resource values to allow full CPU access, 6Gi of RAM, and a 6G JVM heap.
   resources:
     requests:
       cpu: "1"
       memory: 6Gi
   jvmConfig:
     heapSize: 6G
+  ##[//]:v2 - END
+  ##[//]:v2 - Enabled load balancer and configured domain property with DNS zone info.
   loadBalancer:
-    enabled: enabled ##[//]:v1 - Enabled loadBalancer
-    domain: "cotkgi.((REMOVED-REGION))" ##[//]:v1 - Added domain info
+    enabled: true
+    domain: "cotkgi.((REMOVED-REGION))"
+  ##[//]:v2 - END
   tls:
     enabled: false
     fullchain: |-
     privkey: |-
     cacerts: |-
   metricReporter:
-    enabled: true ##[//]:v1 - Enabled metricReporter
-##[//]:v1 - Added to create nodeAffinity to nodes labeled 'kafka'
-  nodeAffinity:
-    key: components
-    values:
-    - kafka
-##[//]:v1 - Added rack:topology mapping to assign one pod per AZ in TKGI  
-  rack:
-    topology: bosh.zone
+    enabled: false
+##[//]:v2 - podAnnotations added to make the affinity rules work
+  podAnnotations:
+    workload: kafka
+##[//]:v2 - END
+##[//]:v2 - Added affinity and anti-affinity rules to ensure pod distribution
+  affinity:
+    nodeAffinity:
+      key: components
+      values:
+      - kafka
+      rule: PREFERRED
+    podAffinity:
+      rule: PREFERRED
+      terms:
+      - key: workload
+        values:
+        - kafka
+        namespaces:
+        - confluent-operator
+        topologyKey:
+          key: bosh.zone
+        weight:
+          weight: 100
+    podAntiAffinity:
+      rule: PREFERRED
+      terms:
+      - key: workload
+        values:
+        - kafka
+        namespaces:
+        - confluent-operator
+        topologyKey:
+          key: bosh.zone
+        weight:
+          weight: 100
+##[//]:v2 - END
 
 ## Schema Registry
 ##
 schemaregistry:
   name: schemaregistry
-  replicas: 3 ##[//]:v1 - Default is 2 instances, increased this to three so map across availability zones.
-  disableHostPort: true ##[//]:v1 - Need to set this to `true` to honor rack:topology mapping below
-##[//]:v1 - Added resource requests tuned down from default of the chart.
+  ##[//]:v2 - Default is 2 instances, increased this to three so map across availability zones.
+  replicas: 3
+  ##[//]:v2 - END
+  ##[//]:v2 - Added resource requests and JVM heap all tuned down from default of the chart.
   resources:
     requests:
       cpu: 500m
       memory: 2Gi
     limits: {}
-##[//]:v1 - Tuned down JVM heap from default of the chart.
   jvmConfig:
-    heapSize: 2G  
+    heapSize: 2G 
+  ##[//]:v2 - END
   tls:
     enabled: false
     authentication:
@@ -134,30 +188,59 @@ schemaregistry:
     kafka:
       brokerCount: 3
       bootstrapEndpoint: kafka:9071
-##[//]:v1 - Added to create nodeAffinity to nodes labeled 'services' 
-  nodeAffinity:
-    key: components
-    values:
-    - core-services
-##[//]:v1 - Added rack:topology mapping to assign one pod per AZ in TKGI  
-  rack:
-    topology: bosh.zone
+##[//]:v2 - podAnnotations added to make the affinity rules work
+  podAnnotations:
+    workload: core-services
+##[//]:v2 - END
+##[//]:v2 - Added affinity and anti-affinity rules to ensure pod distribution
+  affinity:
+    nodeAffinity:
+      key: components
+      values:
+      - core-services
+      rule: PREFERRED
+    podAffinity:
+      rule: PREFERRED
+      terms:
+      - key: workload
+        values:
+        - core-services
+        namespaces:
+        - confluent-operator
+        topologyKey:
+          key: bosh.zone
+        weight:
+          weight: 100
+    podAntiAffinity:
+      rule: PREFERRED
+      terms:
+      - key: workload
+        values:
+        - core-services
+        namespaces:
+        - confluent-operator
+        topologyKey:
+          key: bosh.zone
+        weight:
+          weight: 100
+##[//]:v2 - END
 
 ## Connect Cluster
 ##
 connect:
   name: connectors
-  replicas: 3 ##[//]:v1 - Default is 2 instances, increased this to three so map across availability zones.
-  disableHostPort: true ##[//]:v1 - Need to set this to `true` to honor rack:topology mapping below
-##[//]:v1 - Added resource requests tuned down from default of the chart.
+  ##[//]:v2 - Default replicas = 2, upped that amount to 3 replicas.
+  replicas: 3
+  ##[//]:v2 - END
+  ##[//]:v2 - Added resource requests and JVM heap all tuned down from default of the chart.
   resources:
     requests:
       cpu: 500m
       memory: 2Gi
     limits: {}
-##[//]:v1 - Tuned down JVM heap from default of the chart.
   jvmConfig:
-    heapSize: 2G
+    heapSize: 2G 
+  ##[//]:v2 - END  
   tls:
     enabled: false
     ## "" for none, "tls" for mutual auth
@@ -176,30 +259,60 @@ connect:
     schemaRegistry:
       enabled: true
       url: http://schemaregistry:8081
-##[//]:v1 - Added to create nodeAffinity to nodes labeled 'services' 
-  nodeAffinity:
-    key: components
-    values:
-    - ops-services
-##[//]:v1 - Added rack:topology mapping to assign one pod per AZ in TKGI  
-  rack:
-    topology: bosh.zone
+##[//]:v2 - podAnnotations added to make the affinity rules work
+  podAnnotations:
+    workload: ops-services
+##[//]:v2 - END
+##[//]:v2 - Added affinity and anti-affinity rules to ensure pod distribution
+  affinity:
+    nodeAffinity:
+      key: components
+      values:
+      - ops-services
+      rule: PREFERRED
+    podAffinity:
+      rule: PREFERRED
+      terms:
+      - key: workload
+        values:
+        - ops-services
+        namespaces:
+        - confluent-operator
+        topologyKey:
+          key: bosh.zone
+        weight:
+          weight: 100
+    podAntiAffinity:
+      rule: PREFERRED
+      terms:
+      - key: workload
+        values:
+        - ops-services
+        namespaces:
+        - confluent-operator
+        topologyKey:
+          key: bosh.zone
+        weight:
+          weight: 100
+##[//]:v2 - END
+
 
 ## Replicator Connect Cluster
 ##
 replicator:
   name: replicator
-  replicas: 3 ##[//]:v1 - Default is 2 instances, increased this to three so map across availability zones.
-  disableHostPort: true ##[//]:v1 - Need to set this to `true` to honor rack:topology mapping below
-##[//]:v1 - Added resource requests tuned down from default of the chart.
+  ##[//]:v2 - Default replicas = 2, upped that amount to 3 replicas.
+  replicas: 3
+  ##[//]:v2 - END
+  ##[//]:v2 - Added resource requests and JVM heap all tuned down from default of the chart.
   resources:
     requests:
       cpu: 500m
       memory: 2Gi
     limits: {}
-##[//]:v1 - Tuned down JVM heap from default of the chart.
   jvmConfig:
     heapSize: 2G
+  ##[//]:v2 - END 
   tls:
     enabled: false
     authentication:
@@ -214,30 +327,59 @@ replicator:
     kafka:
       brokerCount: 3
       bootstrapEndpoint: kafka:9071
-##[//]:v1 - Added to create nodeAffinity to nodes labeled 'services' 
-  nodeAffinity:
-    key: components
-    values:
-    - core-services
-##[//]:v1 - Added rack:topology mapping to assign one pod per AZ in TKGI  
-  rack:
-    topology: bosh.zone
+##[//]:v2 - podAnnotations added to make the affinity rules work
+  podAnnotations:
+    workload: core-services
+##[//]:v2 - END
+##[//]:v2 - Added affinity and anti-affinity rules to ensure pod distribution
+  affinity:
+    nodeAffinity:
+      key: components
+      values:
+      - core-services
+      rule: PREFERRED
+    podAffinity:
+      rule: PREFERRED
+      terms:
+      - key: workload
+        values:
+        - core-services
+        namespaces:
+        - confluent-operator
+        topologyKey:
+          key: bosh.zone
+        weight:
+          weight: 100
+    podAntiAffinity:
+      rule: PREFERRED
+      terms:
+      - key: workload
+        values:
+        - core-services
+        namespaces:
+        - confluent-operator
+        topologyKey:
+          key: bosh.zone
+        weight:
+          weight: 100
+##[//]:v2 - END
 
 ## KSQL
 ##
 ksql:
   name: ksql
-  replicas: 3 ##[//]:v1 - Default is 2 instances, increased this to three so map across availability zones.
-  disableHostPort: true ##[//]:v1 - Need to set this to `true` to honor rack:topology mapping below
-##[//]:v1 - Added resource requests tuned down from default of the chart.
+  ##[//]:v2 - Default replicas = 2, upped that amount to 3 replicas.
+  replicas: 3
+  ##[//]:v2 - END
+  ##[//]:v2 - Added resource requests and JVM heap all tuned down from default of the chart.
   resources:
     requests:
       cpu: 500m
       memory: 2Gi
     limits: {}
-##[//]:v1 - Tuned down JVM heap from default of the chart.
   jvmConfig:
     heapSize: 2G
+  ##[//]:v2 - END 
   tls:
     enabled: false
     authentication:
@@ -260,20 +402,56 @@ ksql:
         authentication:
           type: ""
       url: http://schemaregistry:8081
-##[//]:v1 - Added to create nodeAffinity to nodes labeled 'services' 
-  nodeAffinity:
-    key: components
-    values:
-    - core-services
-##[//]:v1 - Added rack:topology mapping to assign one pod per AZ in TKGI  
-  rack:
-    topology: bosh.zone
+##[//]:v2 - podAnnotations added to make the affinity rules work
+  podAnnotations:
+    workload: core-services
+##[//]:v2 - END
+##[//]:v2 - Added affinity and anti-affinity rules to ensure pod distribution
+  affinity:
+    nodeAffinity:
+      key: components
+      values:
+      - core-services
+      rule: PREFERRED
+    podAffinity:
+      rule: PREFERRED
+      terms:
+      - key: workload
+        values:
+        - core-services
+        namespaces:
+        - confluent-operator
+        topologyKey:
+          key: bosh.zone
+        weight:
+          weight: 100
+    podAntiAffinity:
+      rule: PREFERRED
+      terms:
+      - key: workload
+        values:
+        - core-services
+        namespaces:
+        - confluent-operator
+        topologyKey:
+          key: bosh.zone
+        weight:
+          weight: 100
+##[//]:v2 - END
 
 ## Control Center (C3) Resource configuration
 ##
 controlcenter:
   name: controlcenter
-  disableHostPort: true ##[//]:v1 - Need to set this to `true` to honor rack:topology mapping below
+  ##[//]:v2 - Added resource requests and JVM heap all tuned down from default of the chart.
+  resources:
+    requests:
+      cpu: 500m
+      memory: 2Gi
+    limits: {}
+  jvmConfig:
+    heapSize: 2G
+  ##[//]:v2 - END 
   license: ""
   ##
   ## C3 dependencies
@@ -296,9 +474,11 @@ controlcenter:
   ##
   ## C3 External Access
   ##
+  ##[//]:v2 - Enabled the load balancer and defined the domain to be used.
   loadBalancer:
     enabled: true
-    domain: "cotkgi.((REMOVED-REGION))" ##[//]:v1 - Added domain info
+    domain: "cotkgi.((REMOVED-REGION))"
+  ##[//]:v2 - END
   ##
   ## TLS configuration
   ##
@@ -320,11 +500,15 @@ controlcenter:
       property:
         ((REMOVED-USERNAME)): ((REMOVED-PASSWORD)),Administrators
         disallowed: no_access
-##[//]:v1 - Added to create nodeAffinity to nodes labeled 'services' 
-  nodeAffinity:
-    key: components
-    values:
-    - ops-services
-##[//]:v1 - Added rack:topology mapping to assign one pod per AZ in TKGI  
-  rack:
-    topology: bosh.zone
+##[//]:v2 - podAnnotations added to make the affinity rules work
+  podAnnotations:
+    workload: ops-services
+##[//]:v2 - END
+##[//]:v2 - Added affinity rule
+  affinity:
+    nodeAffinity:
+      key: components
+      values:
+      - ops-services
+      rule: PREFERRED
+##[//]:v2 - END
